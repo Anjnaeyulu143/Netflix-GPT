@@ -1,9 +1,17 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Browse from "../Browse";
 import Login from "../Login";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../../utils/firebase";
+import { useDispatch } from "react-redux";
+
+import { addUser } from "../../store/reducers/userSlice";
+import { removeUser } from "../../store/reducers/userSlice";
 
 const Body = () => {
+  const dispatch = useDispatch();
+
   const appRouter = createBrowserRouter([
     {
       path: "/",
@@ -15,13 +23,20 @@ const Body = () => {
     },
   ]);
 
+  useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const { uid, email, displayName } = user;
+        dispatch(addUser({ uid, email, displayName }));
+      } else {
+        dispatch(removeUser());
+      }
+    });
+  }, []);
+
   return (
     <div>
       <RouterProvider router={appRouter} />
-      <img
-        src="https://assets.nflxext.com/ffe/siteui/vlv3/00103100-5b45-4d4f-af32-342649f1bda5/64774cd8-5c3a-4823-a0bb-1610d6971bd4/IN-en-20230821-popsignuptwoweeks-perspective_alpha_website_medium.jpg"
-        alt="bg-image"
-      />
     </div>
   );
 };
